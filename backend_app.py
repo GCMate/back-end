@@ -2,6 +2,11 @@ import sqlite3
 from user import User
 from chat import Chat
 from course import Course
+from flask import Flask, request
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
 
 # =========================================================
 #                          TODO 
@@ -218,3 +223,13 @@ create_and_insert_course("math101")
 get_Courses()
 print(type(usrbyrin))
 
+# Sending data from front -> back
+@app.route('/api', methods=['POST'])
+def json_example():
+    data = request.get_json() 
+    rin = data['RIN']
+    print(rin)
+    return {"valid": "true"}
+
+if __name__ == "__main__": 
+    app.run(debug=True)
