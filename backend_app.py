@@ -33,10 +33,8 @@ c = conn.cursor()
 # Create user table if none in database
 try:
     c.execute("""CREATE TABLE users (
-                first text,
-                last text,
-                rin integer,
-                phone integer
+                rin text,
+                phone text
                 )""")
 except:
     pass
@@ -53,7 +51,7 @@ except:
 try:
     c.execute("""CREATE TABLE chats (
                 course text, 
-                numb int,
+                numb text,
                 chatID text
                 )""")
 except:
@@ -63,7 +61,7 @@ except:
 try:
     c.execute("""CREATE TABLE ucoTable (
                 courseID text, 
-                rin int
+                rin text
                 )""")
 except:
     pass
@@ -71,17 +69,18 @@ except:
 # Create user-chat table if none in database
 try:
     c.execute("""CREATE TABLE uchTable (
-                chatID text, 
-                rin int
+                chatID text,
+                courseID text,  
+                rin text
                 )""")
 except:
     pass                
 
 # Create course-chat table if none in database
 try:
-    c.execute("""CREATE TABLE cctable (
+    c.execute("""CREATE TABLE cctTable (
                 courseID text, 
-                chatID int
+                chatID text
                 )""")
 except:
     pass
@@ -91,6 +90,30 @@ def get_Users():
     c.execute("SELECT * FROM Users")
     print(c.fetchall())
 
+# print course table
+def get_Courses():
+    c.execute("SELECT * FROM Courses")
+    print(c.fetchall())
+
+# print chat table
+def get_Chats():
+    c.execute("SELECT * FROM Chats")
+    print(c.fetchall())
+
+# print ucoTable table
+def get_ucoTable():
+    c.execute("SELECT * FROM ucoTable")
+    print(c.fetchall())
+
+# print uchTable table
+def get_uchTable():
+    c.execute("SELECT * FROM uchTable")
+    print(c.fetchall())
+
+# print ccTable table
+def get_ccTable():
+    c.execute("SELECT * FROM ccTable")
+    print(c.fetchall())
 
 # check if RIN is taken
 def taken_rin(RIN):
@@ -110,8 +133,8 @@ def taken_phone(phone):
 
 
 # create a new user object and insert it
-def create_and_insert_user(first, last, rin, phone):
-    new_user = User(first, last, rin, phone)
+def create_and_insert_user(rin, phone):
+    new_user = User(rin, phone)
     insert_user(new_user)
 
 # Add user
@@ -123,7 +146,14 @@ def insert_user(new_user):
         print("phone number {} is already taken".format(new_user.phone))
         return
     with conn:
-        c.execute("INSERT INTO users VALUES (:first, :last, :rin, :phone)", {'first': new_user.first, 'last': new_user.last, 'rin': new_user.rin, 'phone': new_user.phone})
+        c.execute("INSERT INTO users VALUES (:rin, :phone)", {'rin': new_user.rin, 'phone': new_user.phone})
+
+# delete user
+def delete_user(usr):
+    with conn:
+        c.execute("DELETE FROM users where rin ={}".format(usr.rin))
+        c.execute("DELETE FROM ucoTable where rin ={}".format(usr.rin))
+        c.execute("DELETE FROM uchTable where rin ={}".format(usr.rin))
 
 # create a new course object and insert it
 def create_and_insert_course(course_id):
@@ -135,6 +165,14 @@ def insert_course(new_course):
     with conn:
         c.execute("INSERT INTO courses VALUES (:id)", {'id': new_course.id})
 
+# delete course
+def delete_course(my_course):
+    with conn:
+        c.execute("DELETE FROM courses where id ={}".format(my_course.id))
+        c.execute("DELETE FROM ucoTable where courseID ={}".format(my_course.id))
+        c.execute("DELETE FROM uchTable where  courseID ={}".format(my_course.id))
+        c.execute("DELETE FROM ccTable where courseID ={}".format(my_course.id))
+
 # create a new chat object and insert it
 def create_and_insert_chat(course_id, num):
     new_chat = Chat(course_id, num)
@@ -145,6 +183,13 @@ def insert_chat(new_chat):
     with conn:
         c.execute("INSERT INTO chats VALUES (:course, :num, chatID)", {'course': new_chat.course, 'num': new_chat.num, 'chatID': new_chat.chatID()})
 
+# delete chat
+def delete_chat(my_chat):
+    with conn:
+        c.execute("DELETE FROM chats where chatID ={}".format(my_chat.chatID))
+        c.execute("DELETE FROM uchTable where chatID ={}".format(my_chat.chatID))
+        c.execute("DELETE FROM ccTable where chatID={}".format(my_chat.chatID))
+
 # Get user by RIN
 def get_user_by_rin(RIN):
     c.execute("SELECT * FROM users WHERE rin=:rin", {'rin': RIN})
@@ -153,9 +198,9 @@ def get_user_by_rin(RIN):
 
 
 
-usr1 = User('Will', 'Bacon', 661889750, 8587400565)
-usr2 = User('Someone', 'Else', 661889999, 4208675309)
-usr3 = User('Third', 'Person', 661889999, 4208675309)
+usr1 = User("661889750", "8587400565")
+usr2 = User("661889999", "4208675309")
+usr3 = User("661889999", "4208675309")
 
 insert_user(usr1)
 get_Users()
@@ -163,7 +208,13 @@ insert_user(usr2)
 get_Users()
 insert_user(usr3)
 get_Users()
+delete_user(usr2)
+get_Users()
 
-usrbyrin = get_user_by_rin(661889750)
+usrbyrin = get_user_by_rin("661889750")
+
+
+create_and_insert_course("math101")
+get_Courses()
 print(type(usrbyrin))
 
