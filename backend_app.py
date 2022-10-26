@@ -140,9 +140,9 @@ def taken_phone(phone):
 def available_rin(RIN):
     c.execute("SELECT * FROM users WHERE rin=:rin", {'rin': RIN})
     if c.fetchone() is None:
-        return {"valid": "true"}
+        return "true"
     else:
-        return {"valid": "false"}
+        return "false"
 
 # check if phone number is taken, returns string
 def available_phone(phone):
