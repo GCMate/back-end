@@ -136,6 +136,22 @@ def taken_phone(phone):
     else:
         return True
 
+# check if RIN is taken, returns string
+def available_rin(RIN):
+    c.execute("SELECT * FROM users WHERE rin=:rin", {'rin': RIN})
+    if c.fetchone() is None:
+        return "true"
+    else:
+        return "false"
+
+# check if phone number is taken, returns string
+def available_phone(phone):
+    c.execute("SELECT * FROM users WHERE phone=:phone", {'phone': phone})
+    if c.fetchone() is None:
+        return "true"
+    else:
+        return "false"
+
 
 # create a new user object and insert it
 def create_and_insert_user(rin, phone):
@@ -203,33 +219,46 @@ def get_user_by_rin(RIN):
 
 
 
+
+# NOTE: something weird is going on with insert_user and get_users(), order doesnt seem to matter get_users() will return current state
 usr1 = User("661889750", "8587400565")
 usr2 = User("661889999", "4208675309")
-usr3 = User("661889999", "4208675309")
+# usr3 = User("661889999", "4208675309")
 
+print("here")
+get_Users()
+print("here2")
 insert_user(usr1)
-get_Users()
+# available_rin(usr1.rin)
+# get_Users()
 insert_user(usr2)
-get_Users()
-insert_user(usr3)
-get_Users()
-delete_user(usr2)
-get_Users()
+# get_Users()
+# insert_user(usr3)
+# get_Users()
+# delete_user(usr2)
+# get_Users()
 
-usrbyrin = get_user_by_rin("661889750")
+# usrbyrin = get_user_by_rin("661889750")
 
 
-create_and_insert_course("math101")
-get_Courses()
-print(type(usrbyrin))
+# create_and_insert_course("math101")
+# get_Courses()
+# print(type(usrbyrin))
 
 # Sending data from front -> back
-@app.route('/api', methods=['POST'])
-def json_example():
+@app.route('/rin', methods=['POST'])
+def valid_rin():
     data = request.get_json() 
-    rin = data['RIN']
-    print(rin)
-    return {"valid": "true"}
+    # rin = data['RIN']
+    print("{}, {}".format(data['RIN'], available_rin(data['RIN'])))
+    return {"valid": available_rin(data['RIN'])}
+
+@app.route('/phone', methods=['POST'])
+def valid_phone():
+    data = request.get_json() 
+    # rin = data['RIN']
+    # print(rin)
+    return {"valid": valid_phone(data['PHONE'])}
 
 if __name__ == "__main__": 
     app.run(debug=True)
