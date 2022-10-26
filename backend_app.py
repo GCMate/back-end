@@ -2,11 +2,12 @@ import sqlite3
 from user import User
 from chat import Chat
 from course import Course
-from flask import Flask, request
-from flask_cors import CORS
+from flask import Flask, request, jsonify, Response
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials = True)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # =========================================================
 #                          TODO 
@@ -31,9 +32,8 @@ CORS(app)
 
 
 # Connect to database and get control
-conn = sqlite3.connect('GCmate.db')
+conn = sqlite3.connect('GCmate.db', check_same_thread=False)
 c = conn.cursor()
-
 
 # Create user table if none in database
 try:
@@ -136,7 +136,22 @@ def taken_phone(phone):
     else:
         return True
 
+# check if RIN is taken, returns string
+def available_rin(RIN):
+    c.execute("SELECT * FROM users WHERE rin=:rin", {'rin': RIN})
+    if c.fetchone() is None:
+        return {"valid": "true"}
+    else:
+        return {"valid": "false"}
 
+# check if phone number is taken, returns string
+def available_phone(phone):
+    c.execute("SELECT * FROM users WHERE phone=:phone", {'phone': phone})
+    if c.fetchone() is None:
+        return "true"
+    else:
+        return "false"
+        
 # create a new user object and insert it
 def create_and_insert_user(rin, phone):
     new_user = User(rin, phone)
@@ -224,12 +239,11 @@ get_Courses()
 print(type(usrbyrin))
 
 # Sending data from front -> back
-@app.route('/api', methods=['POST'])
-def json_example():
+@app.route('/api/rin', methods=['POST'])
+def valid_rin():
     data = request.get_json() 
-    rin = data['RIN']
-    print(rin)
-    return {"valid": "true"}
+    print("{}, {}".format(data['RIN'], available_rin(data['RIN'])))
+    return {"valid": available_rin(data['RIN'])}
 
 if __name__ == "__main__": 
     app.run(debug=True)
