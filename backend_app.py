@@ -215,9 +215,6 @@ def get_user_by_rin(RIN):
     c.execute("SELECT * FROM users WHERE rin=:rin", {'rin': RIN})
     return c.fetchone()
 
-
-
-
 usr1 = User("661889750", "8587400565")
 usr2 = User("661889999", "4208675309")
 usr3 = User("661889999", "4208675309")
@@ -243,6 +240,14 @@ print(type(usrbyrin))
 def valid_rin():
     data = request.get_json() 
     print("{}, {}".format(data['RIN'], available_rin(data['RIN'])))
+    return {"valid": available_rin(data['RIN'])}
+
+# Storing RIN and Phone number in database as a new user  
+@app.route('/api/phoneRIN', methods=['POST'])
+def create_new_user():
+    data = request.get_json() 
+    print("{}, {}".format(data['RIN'], data['PHONE']))
+    create_and_insert_user(data['RIN'], data['PHONE'])
     return {"valid": available_rin(data['RIN'])}
 
 if __name__ == "__main__": 
