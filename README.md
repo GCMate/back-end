@@ -16,7 +16,18 @@ Follow these steps in order to run the backend:
        python3 -m venv venv
        source venv/bin/activate
        ```
-4. Run `backend_app.py` by typing in the prompt below in your terminal/command prompt 
+4. If this is the first time you are running the code, you must install Flask and Flask-CORS with these commands: 
+   -   Windows: 
+       ```
+       pip install flask
+       pip install -U flask-cors
+       ```   
+   -   Mac: 
+       ```
+       pip3 install flask
+       pip3 install -U flask-cors
+       ```  
+5. Run `backend_app.py` by typing in the prompt below in your terminal/command prompt 
    -   Windows: `python backend_app.py`
    -   Mac: `python3 backend_app.py`    
      
