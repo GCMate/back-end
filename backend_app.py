@@ -4,6 +4,7 @@ from chat import Chat
 from course import Course
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS, cross_origin
+import json
 
 app = Flask(__name__)
 CORS(app, supports_credentials = True)
@@ -47,7 +48,10 @@ except:
 # Create course table if none in database
 try:
     c.execute("""CREATE TABLE courses (
-                id text
+                crse text,
+                id text,
+                subj text,
+                title text
                 )""")
 except:
     pass
@@ -90,35 +94,45 @@ try:
 except:
     pass
 
-# print user table
+# get user table
 def get_Users():
     c.execute("SELECT * FROM Users")
-    print(c.fetchall())
+    return c.fetchall()
 
-# print course table
+# get course table
 def get_Courses():
     c.execute("SELECT * FROM Courses")
-    print(c.fetchall())
+    return c.fetchall()
 
-# print chat table
+# get course table
+def get_Courses_by_subj(subj):
+    c.execute("SELECT * FROM Courses WHERE subj=:subj", {'subj': subj})
+    return c.fetchall()
+
+# get course table
+def get_Course_subj():
+    c.execute("SELECT DISTINCT subj FROM Courses")
+    return c.fetchall()
+
+# get chat table
 def get_Chats():
     c.execute("SELECT * FROM Chats")
-    print(c.fetchall())
+    return c.fetchall()
 
-# print ucoTable table
+# get ucoTable table
 def get_ucoTable():
     c.execute("SELECT * FROM ucoTable")
-    print(c.fetchall())
+    return c.fetchall()
 
-# print uchTable table
+# get uchTable table
 def get_uchTable():
     c.execute("SELECT * FROM uchTable")
-    print(c.fetchall())
+    return c.fetchall()
 
-# print ccTable table
+# get ccTable table
 def get_ccTable():
     c.execute("SELECT * FROM ccTable")
-    print(c.fetchall())
+    return c.fetchall()
 
 # check if RIN is taken
 def taken_rin(RIN):
@@ -131,6 +145,16 @@ def taken_rin(RIN):
 # check if phone number is taken
 def taken_phone(phone):
     c.execute("SELECT * FROM users WHERE phone=:phone", {'phone': phone})
+    if c.fetchone() is None:
+        return False
+    else:
+        return True
+
+# check if course is already in the database 
+# if in db: return true 
+# else: return false
+def course_in_db(id):
+    c.execute("SELECT * FROM courses WHERE id=:id", {'id': id})
     if c.fetchone() is None:
         return False
     else:
@@ -176,14 +200,14 @@ def delete_user(usr):
         c.execute("DELETE FROM uchTable where rin ={}".format(usr.rin))
 
 # create a new course object and insert it
-def create_and_insert_course(course_id):
-    new_course = Course(course_id)
+def create_and_insert_course(crse, course_id, subj, title):
+    new_course = Course(crse, course_id, subj, title)
     insert_course(new_course)
 
 # Add course
 def insert_course(new_course):
     with conn:
-        c.execute("INSERT INTO courses VALUES (:id)", {'id': new_course.id})
+        c.execute("INSERT INTO courses VALUES (:crse, :id, :subj, :title)", {'crse': new_course.crse ,'id': new_course.id, 'subj': new_course.subj, 'title': new_course.title})
 
 # delete course
 def delete_course(my_course):
@@ -215,25 +239,71 @@ def get_user_by_rin(RIN):
     c.execute("SELECT * FROM users WHERE rin=:rin", {'rin': RIN})
     return c.fetchone()
 
-usr1 = User("661889750", "8587400565")
-usr2 = User("661889999", "4208675309")
-usr3 = User("661889999", "4208675309")
-
-insert_user(usr1)
-get_Users()
-insert_user(usr2)
-get_Users()
-insert_user(usr3)
-get_Users()
-delete_user(usr2)
-get_Users()
-
-usrbyrin = get_user_by_rin("661889750")
+# load courses into database
+def load_courses(json_file):
+    f = open(json_file)
+    values = json.load(f)
+    with conn:
+        for data in values:
+            for x, i in enumerate(data['courses']):
+                if course_in_db(i['id']):
+                    continue
+                c.execute("INSERT INTO courses VALUES (:crse, :id, :subj, :title)", {'crse':i['crse'] , 'id': i['id'], 'subj': i['subj'], 'title': i['title']})
 
 
-create_and_insert_course("math101")
-get_Courses()
-print(type(usrbyrin))
+def subjects_to_json():
+    subjs = get_Course_subj()
+    subject_dict = {}
+    subject_list = []
+    for i in subjs:
+        subject_list.append(i[0])
+    subject_dict['SUBJECTS'] = subject_list 
+    return subject_dict
+
+def course_by_sub_to_json(subj):
+    course_vals = get_Courses_by_subj(subj)
+    course_dict = {}
+    course_list = []
+    for i in course_vals:
+        curr_course = Course(i[0], i[1], i[2], i[3])
+        course_list.append(curr_course.toJson())
+        print(curr_course.toJson())
+    course_dict['COURSES'] = course_list 
+    return course_dict
+
+
+# usr1 = User("661889750", "8587400565")
+# usr2 = User("661889999", "4208675309")
+# usr3 = User("661889999", "4208675309")
+
+# insert_user(usr1)
+# get_Users()
+# insert_user(usr2)
+# get_Users()
+# insert_user(usr3)
+# get_Users()
+# delete_user(usr2)
+# get_Users()
+
+# usrbyrin = get_user_by_rin("661889750")
+
+load_courses('courses.json')
+# create_and_insert_course("math101")
+# print(get_Courses_by_subj('ADMN'))
+print(course_by_sub_to_json('ADMN'))
+# print('-------')
+# print(type(usrbyrin))
+# print(get_Course_subj())
+# x = get_Courses()
+# print(type(x))
+# for i in x:
+    # print(i)
+# subjects_to_json()
+# f = open('courses.json')
+# test = json.load(f)
+# data = test[0]
+# print("{}, {}, {}, {}".format(data['courses'][0]['crse'], data['courses'][0]['id'], data['courses'][0]['subj'], data['courses'][0]['title']))
+# print(data.keys())
 
 # Sending data from front -> back
 @app.route('/api/rin', methods=['POST'])
@@ -248,7 +318,19 @@ def create_new_user():
     data = request.get_json() 
     print("{}, {}".format(data['RIN'], data['PHONE']))
     create_and_insert_user(data['RIN'], data['PHONE'])
-    return {"valid": available_rin(data['RIN'])}
+    return {"valid": available_phone(data['PHONE'])}
+
+# get list of course subjects
+@app.route('/api/subj', methods=['GET'])
+def get_subjects():
+   return jsonify(subjects_to_json())
+
+# get list of course subjects
+@app.route('/api/coursebysubj', methods=['GET'])
+def get_cour_by_subject():
+   data = request.get_json()  
+   return jsonify(course_by_sub_to_json(data['SUBJECT']))
+
 
 if __name__ == "__main__": 
     app.run(debug=True)
