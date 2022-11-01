@@ -269,7 +269,7 @@ def course_by_sub_to_json(subj):
         course_list.append(curr_course.toJson())
         print(curr_course.toJson())
     course_dict['COURSES'] = course_list 
-    return course_dict
+    return course_list
 
 
 # usr1 = User("661889750", "8587400565")
@@ -290,7 +290,9 @@ def course_by_sub_to_json(subj):
 load_courses('courses.json')
 # create_and_insert_course("math101")
 # print(get_Courses_by_subj('ADMN'))
+
 print(course_by_sub_to_json('ADMN'))
+
 # print('-------')
 # print(type(usrbyrin))
 # print(get_Course_subj())
@@ -326,7 +328,7 @@ def get_subjects():
    return jsonify(subjects_to_json())
 
 # get list of course subjects
-@app.route('/api/coursebysubj', methods=['GET'])
+@app.route('/api/coursebysubj', methods=['POST'])
 def get_cour_by_subject():
    data = request.get_json()  
    return jsonify(course_by_sub_to_json(data['SUBJECT']))
