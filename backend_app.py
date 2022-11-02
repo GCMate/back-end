@@ -94,6 +94,8 @@ try:
 except:
     pass
 
+
+
 # get user table
 def get_Users():
     c.execute("SELECT * FROM Users")
@@ -142,6 +144,7 @@ def taken_rin(RIN):
     else:
         return True
 
+
 # check if phone number is taken
 def taken_phone(phone):
     c.execute("SELECT * FROM users WHERE phone=:phone", {'phone': phone})
@@ -159,6 +162,7 @@ def course_in_db(id):
         return False
     else:
         return True
+
 
 # check if RIN is taken, returns string
 def available_rin(RIN):
@@ -186,11 +190,13 @@ def insert_user(new_user):
     if taken_rin(new_user.rin):
         print("rin {} is already taken".format(new_user.rin))
         return
-    if taken_phone(new_user.phone):
+    elif taken_phone(new_user.phone):
         print("phone number {} is already taken".format(new_user.phone))
         return
-    with conn:
-        c.execute("INSERT INTO users VALUES (:rin, :phone)", {'rin': new_user.rin, 'phone': new_user.phone})
+    else:
+        with conn:
+            c.execute("INSERT INTO users VALUES (:rin, :phone)", {'rin': new_user.rin, 'phone': new_user.phone})
+            conn.commit()
 
 # delete user
 def delete_user(usr):
@@ -198,6 +204,7 @@ def delete_user(usr):
         c.execute("DELETE FROM users where rin ={}".format(usr.rin))
         c.execute("DELETE FROM ucoTable where rin ={}".format(usr.rin))
         c.execute("DELETE FROM uchTable where rin ={}".format(usr.rin))
+        conn.commit()
 
 # create a new course object and insert it
 def create_and_insert_course(crse, course_id, subj, title):
@@ -208,6 +215,7 @@ def create_and_insert_course(crse, course_id, subj, title):
 def insert_course(new_course):
     with conn:
         c.execute("INSERT INTO courses VALUES (:crse, :id, :subj, :title)", {'crse': new_course.crse ,'id': new_course.id, 'subj': new_course.subj, 'title': new_course.title})
+        conn.commit()
 
 # delete course
 def delete_course(my_course):
@@ -216,6 +224,7 @@ def delete_course(my_course):
         c.execute("DELETE FROM ucoTable where courseID ={}".format(my_course.id))
         c.execute("DELETE FROM uchTable where  courseID ={}".format(my_course.id))
         c.execute("DELETE FROM ccTable where courseID ={}".format(my_course.id))
+        conn.commit()
 
 # create a new chat object and insert it
 def create_and_insert_chat(course_id, num):
@@ -226,6 +235,7 @@ def create_and_insert_chat(course_id, num):
 def insert_chat(new_chat):
     with conn:
         c.execute("INSERT INTO chats VALUES (:course, :num, chatID)", {'course': new_chat.course, 'num': new_chat.num, 'chatID': new_chat.chatID()})
+        conn.commit()
 
 # delete chat
 def delete_chat(my_chat):
@@ -233,11 +243,35 @@ def delete_chat(my_chat):
         c.execute("DELETE FROM chats where chatID ={}".format(my_chat.chatID))
         c.execute("DELETE FROM uchTable where chatID ={}".format(my_chat.chatID))
         c.execute("DELETE FROM ccTable where chatID={}".format(my_chat.chatID))
+        conn.commit()
 
 # Get user by RIN
 def get_user_by_rin(RIN):
     c.execute("SELECT * FROM users WHERE rin=:rin", {'rin': RIN})
     return c.fetchone()
+
+def add_user_in_course(rin, courseID):
+    # if we don'† have the course --> return false
+    if not course_in_db(courseID):
+        return "false"
+    # if we don'† have the user --> return false
+    if not taken_rin(rin):
+        return "false"
+    # if user-course is already linked in db --> return false (don't want duplicates)
+    c.execute("SELECT * FROM ucoTable WHERE courseID=:courseID AND rin=:rin", {'courseID': courseID, 'rin': rin})
+    if c.fetchone() is not None:
+        return "true"
+    else: 
+        with conn:
+            c.execute("INSERT INTO ucoTable VALUES (:courseID, :rin)", {'courseID': courseID, 'rin': rin})
+            conn.commit()
+        return "true"
+    
+def get_users_courses(rin):
+    c.execute("SELECT * FROM ucoTable WHERE rin=:rin", {'rin': rin})
+    user_courses = c.fetchall()
+    return user_courses
+    
 
 # load courses into database
 def load_courses(json_file):
@@ -249,6 +283,7 @@ def load_courses(json_file):
                 if course_in_db(i['id']):
                     continue
                 c.execute("INSERT INTO courses VALUES (:crse, :id, :subj, :title)", {'crse':i['crse'] , 'id': i['id'], 'subj': i['subj'], 'title': i['title']})
+        conn.commit()
 
 
 def subjects_to_json():
@@ -271,12 +306,25 @@ def course_by_sub_to_json(subj):
     course_dict['COURSES'] = course_list 
     return course_list
 
+load_courses('courses.json')
 
-# usr1 = User("661889750", "8587400565")
+
+# print(taken_rin2("661889750"))
+usr1 = User("661889750", "8587400565")
 # usr2 = User("661889999", "4208675309")
 # usr3 = User("661889999", "4208675309")
-
+# create_and_insert_user("111211111", "8581201011")
+# print(taken_rin2("661889750"))
+insert_user(usr1)
 # insert_user(usr1)
+# insert_user(usr1)
+# insert_user(usr1)
+print(get_Users())
+print(add_user_in_course("661889750", "ADMN-1030"))
+print(add_user_in_course("661889750", "ADMN-1030"))
+print(add_user_in_course("661889750", "ADMN-1030"))
+print(add_user_in_course("661889750", "ADMN-1111"))
+print(get_users_courses(usr1.rin))
 # get_Users()
 # insert_user(usr2)
 # get_Users()
@@ -287,11 +335,11 @@ def course_by_sub_to_json(subj):
 
 # usrbyrin = get_user_by_rin("661889750")
 
-load_courses('courses.json')
+
 # create_and_insert_course("math101")
 # print(get_Courses_by_subj('ADMN'))
 
-print(course_by_sub_to_json('ADMN'))
+# print(course_by_sub_to_json('ADMN'))
 
 # print('-------')
 # print(type(usrbyrin))
@@ -327,12 +375,19 @@ def create_new_user():
 def get_subjects():
    return jsonify(subjects_to_json())
 
-# get list of course subjects
+# get list of course from subject
 @app.route('/api/coursebysubj', methods=['POST'])
 def get_cour_by_subject():
    data = request.get_json()  
    return jsonify(course_by_sub_to_json(data['SUBJECT']))
 
+# update user's course given rin and course
+@app.route('/api/ucupdate', methods=['POST'])
+def update_user_course():
+   data = request.get_json()  
+   return {"success": add_user_in_course(data['RIN'],data['COURSEID'])}
+
 
 if __name__ == "__main__": 
     app.run(debug=True)
+    
