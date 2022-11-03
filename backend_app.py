@@ -270,7 +270,10 @@ def add_user_in_course(rin, courseID):
 def get_users_courses(rin):
     c.execute("SELECT * FROM ucoTable WHERE rin=:rin", {'rin': rin})
     user_courses = c.fetchall()
-    return user_courses
+    course_list = []
+    for course in user_courses: 
+        course_list.append(course[0])
+    return course_list
     
 
 # load courses into database
@@ -325,7 +328,7 @@ print(add_user_in_course("661889750", "ADMN-1030"))
 #print(add_user_in_course("661889750", "ADMN-1030"))
 #print(add_user_in_course("661889750", "ADMN-1030"))
 print("\n== Test: Add second Course to Existing User ==")
-print(add_user_in_course("661889750", "ADMN-1111"))
+print(add_user_in_course("661889750", "ADMN-1100"))
 print("\n== Test: Get Existing User's Course ==")
 print(get_users_courses(usr1.rin))
 # get_Users()
@@ -384,13 +387,13 @@ def get_cour_by_subject():
    data = request.get_json()  
    return jsonify(course_by_sub_to_json(data['SUBJECT']))
 
-# update user's course given rin and course
+# update user's courses given rin and course id
 @app.route('/api/ucupdate', methods=['POST'])
 def update_user_course():
    data = request.get_json()  
    add_user_in_course(data['RIN'],data['COURSEID'])
    user_courses = get_users_courses(data['RIN'])
-   return {"courses": [user_courses[0][0]]}
+   return {"courses": user_courses}
 
 # Returns a user's registered courses 
 # === CURRENTLY ONE COURSE PER USER === 
@@ -398,12 +401,8 @@ def update_user_course():
 def send_user_courses(): 
     data = request.get_json() 
     user_courses = get_users_courses(data['RIN'])
-    num_courses = len(user_courses)
-
-    if (num_courses == 0):
-        return {"courses": []}
     
-    return {"courses": [user_courses[0][0]]}
+    return {"courses": user_courses}
     
 
 if __name__ == "__main__": 
