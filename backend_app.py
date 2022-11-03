@@ -302,28 +302,31 @@ def course_by_sub_to_json(subj):
     for i in course_vals:
         curr_course = Course(i[0], i[1], i[2], i[3])
         course_list.append(curr_course.toJson())
-        print(curr_course.toJson())
+        # print(curr_course.toJson())
     course_dict['COURSES'] = course_list 
     return course_list
 
 load_courses('courses.json')
 
-
-# print(taken_rin2("661889750"))
 usr1 = User("661889750", "8587400565")
-# usr2 = User("661889999", "4208675309")
-# usr3 = User("661889999", "4208675309")
-# create_and_insert_user("111211111", "8581201011")
-# print(taken_rin2("661889750"))
+# === Brian's Testing Code ===
+usr2 = User("661878609", "16465915259")
+if (taken_rin(661878609)): delete_user(usr2)
+# ============================
+print("== Test User Inserted ==")
 insert_user(usr1)
 # insert_user(usr1)
 # insert_user(usr1)
 # insert_user(usr1)
+print("\n== Test: Get All Users ==")
 print(get_Users())
+print("\n== Test: Add a Course to Existing User ==")
 print(add_user_in_course("661889750", "ADMN-1030"))
-print(add_user_in_course("661889750", "ADMN-1030"))
-print(add_user_in_course("661889750", "ADMN-1030"))
+#print(add_user_in_course("661889750", "ADMN-1030"))
+#print(add_user_in_course("661889750", "ADMN-1030"))
+print("\n== Test: Add second Course to Existing User ==")
 print(add_user_in_course("661889750", "ADMN-1111"))
+print("\n== Test: Get Existing User's Course ==")
 print(get_users_courses(usr1.rin))
 # get_Users()
 # insert_user(usr2)
@@ -385,8 +388,23 @@ def get_cour_by_subject():
 @app.route('/api/ucupdate', methods=['POST'])
 def update_user_course():
    data = request.get_json()  
-   return {"success": add_user_in_course(data['RIN'],data['COURSEID'])}
+   add_user_in_course(data['RIN'],data['COURSEID'])
+   user_courses = get_users_courses(data['RIN'])
+   return {"courses": [user_courses[0][0]]}
 
+# Returns a user's registered courses 
+# === CURRENTLY ONE COURSE PER USER === 
+@app.route('/api/userCourses', methods=['POST'])
+def send_user_courses(): 
+    data = request.get_json() 
+    user_courses = get_users_courses(data['RIN'])
+    num_courses = len(user_courses)
+
+    if (num_courses == 0):
+        return {"courses": []}
+    
+    return {"courses": [user_courses[0][0]]}
+    
 
 if __name__ == "__main__": 
     app.run(debug=True)
