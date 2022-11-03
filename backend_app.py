@@ -250,6 +250,7 @@ def get_user_by_rin(RIN):
     c.execute("SELECT * FROM users WHERE rin=:rin", {'rin': RIN})
     return c.fetchone()
 
+# Adds a course to a user's list of registered courses 
 def add_user_in_course(rin, courseID):
     # if we don'† have the course --> return false
     if not course_in_db(courseID):
@@ -267,12 +268,15 @@ def add_user_in_course(rin, courseID):
             conn.commit()
         return "true"
     
+# Returns all courses registered to a user     
 def get_users_courses(rin):
     c.execute("SELECT * FROM ucoTable WHERE rin=:rin", {'rin': rin})
-    user_courses = c.fetchall()
+    user_courses = c.fetchall()    
     course_list = []
     for course in user_courses: 
-        course_list.append(course[0])
+        c.execute("SELECT * FROM courses WHERE id=:id", {'id': course[0]})
+        course_data = c.fetchone()
+        course_list.append(course_data)  
     return course_list
     
 
@@ -328,7 +332,7 @@ print(add_user_in_course("661889750", "ADMN-1030"))
 #print(add_user_in_course("661889750", "ADMN-1030"))
 #print(add_user_in_course("661889750", "ADMN-1030"))
 print("\n== Test: Add second Course to Existing User ==")
-print(add_user_in_course("661889750", "ADMN-1100"))
+print(add_user_in_course("661889750", "ADMN-1111"))
 print("\n== Test: Get Existing User's Course ==")
 print(get_users_courses(usr1.rin))
 # get_Users()
@@ -387,16 +391,16 @@ def get_cour_by_subject():
    data = request.get_json()  
    return jsonify(course_by_sub_to_json(data['SUBJECT']))
 
-# update user's courses given rin and course id
+# Update a user's course list with one course 
 @app.route('/api/ucupdate', methods=['POST'])
 def update_user_course():
    data = request.get_json()  
    add_user_in_course(data['RIN'],data['COURSEID'])
    user_courses = get_users_courses(data['RIN'])
+
    return {"courses": user_courses}
 
 # Returns a user's registered courses 
-# === CURRENTLY ONE COURSE PER USER === 
 @app.route('/api/userCourses', methods=['POST'])
 def send_user_courses(): 
     data = request.get_json() 
@@ -404,7 +408,5 @@ def send_user_courses():
     
     return {"courses": user_courses}
     
-
 if __name__ == "__main__": 
     app.run(debug=True)
-    
