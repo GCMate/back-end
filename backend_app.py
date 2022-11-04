@@ -270,7 +270,27 @@ def add_user_in_course(rin, courseID):
             c.execute("INSERT INTO ucoTable VALUES (:courseID, :rin)", {'courseID': courseID, 'rin': rin})
             conn.commit()
         return "true"
-    
+
+# removes user-course row from ucoTable 
+def remove_user_from_course(rin, courseID):
+    # if we don'† have the course --> return false
+    if not course_in_db(courseID):
+        return "false"
+    # if we don'† have the user --> return false
+    if not taken_rin(rin):
+        return "false"
+    # if user-course isn't already linked in db --> return false (maybe good info for front end?)
+    c.execute("SELECT * FROM ucoTable WHERE courseID=:courseID AND rin=:rin", {'courseID': courseID, 'rin': rin})
+    result = c.fetchone()
+    if result is None:
+        return "false"
+    else:
+        with conn:
+                c.execute("DELETE FROM ucoTable WHERE courseID=:courseID AND rin=:rin", {'courseID': courseID, 'rin': rin})
+                conn.commit()
+        return "true"
+
+
 # Returns all courses registered to a user     
 def get_users_courses(userRin):
     lock.acquire(True)
@@ -283,6 +303,21 @@ def get_users_courses(userRin):
         course_list.append(course_data)  
     lock.release()    
     return course_list
+
+
+# Returns all users in a course     
+def get_course_users(courseID):
+    lock.acquire(True)
+    c.execute("SELECT * FROM ucoTable WHERE courseID=:courseID", {'courseID': courseID})
+    courses_users = c.fetchall()    
+    user_list = []
+    for usr in courses_users: 
+        c.execute("SELECT * FROM users WHERE rin=:rin", {'rin': usr[1]})
+        user_data = c.fetchone()
+        user_list.append(user_data[0])  
+    lock.release()   
+    # print("usr list: {}".format(user_list)) 
+    return user_list
 
 # load courses into database
 def load_courses(json_file):
@@ -340,10 +375,20 @@ print(get_users_courses(usr1.rin))
 usrRC = User("661231234", "15555555555")
 #delete_user(usrRC)
 insert_user(usrRC)
+insert_user(usr2)
 print("\n== New User Inserted ==")
 print(get_Users())
 print(get_users_courses(usrRC.rin))
-#print(add_user_in_course("661231234", "ADMN-1030"))
+print("Users inserted")
+print(add_user_in_course(usr1.rin, "ADMN-4400"))
+print(add_user_in_course(usr2.rin, "ADMN-4400"))
+print("get users in course")
+print(get_course_users("ADMN-4400"))
+print("remove user: 661889750")
+print(remove_user_from_course(usr1.rin, "ADMN-4400"))
+# print(get_Users())
+print(get_course_users("ADMN-4400"))
+# print(taken_rin(""))
 # ===========================
 
 # Sending data from front -> back
@@ -378,6 +423,20 @@ def get_cour_by_subject():
 def update_user_course():
    data = request.get_json()  
    result = add_user_in_course(data['RIN'],data['COURSEID'])
+   # Duplicate course chosen 
+   if (result == "false"): 
+    return 500
+   else: 
+    user_courses = get_users_courses(data['RIN'])
+
+    return {"courses": user_courses}
+
+# remove user from course
+@app.route('/api/ucremove', methods=['POST'])
+@app.errorhandler(500)
+def rem_user_course():
+   data = request.get_json()  
+   result = remove_user_from_course(data['RIN'],data['COURSEID'])
    # Duplicate course chosen 
    if (result == "false"): 
     return 500
