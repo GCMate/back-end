@@ -375,16 +375,16 @@ print(get_users_courses(usr1.rin))
 usrRC = User("661231234", "15555555555")
 #delete_user(usrRC)
 insert_user(usrRC)
-insert_user(usr2)
+#insert_user(usr2)
 print("\n== New User Inserted ==")
 print(get_Users())
 print(get_users_courses(usrRC.rin))
 print("Users inserted")
 print(add_user_in_course(usr1.rin, "ADMN-4400"))
-print(add_user_in_course(usr2.rin, "ADMN-4400"))
-print("get users in course")
+#print(add_user_in_course(usr2.rin, "ADMN-4400"))
+print("\n== Get users in course ==")
 print(get_course_users("ADMN-4400"))
-print("remove user: 661889750")
+print("\n== Remove user: 661889750 ==")
 print(remove_user_from_course(usr1.rin, "ADMN-4400"))
 # print(get_Users())
 print(get_course_users("ADMN-4400"))
@@ -433,14 +433,9 @@ def update_user_course():
 
 # remove user from course
 @app.route('/api/ucremove', methods=['POST'])
-@app.errorhandler(500)
 def rem_user_course():
-   data = request.get_json()  
-   result = remove_user_from_course(data['RIN'],data['COURSEID'])
-   # Duplicate course chosen 
-   if (result == "false"): 
-    return 500
-   else: 
+    data = request.get_json()  
+    result = remove_user_from_course(data['RIN'],data['COURSEID'])
     user_courses = get_users_courses(data['RIN'])
 
     return {"courses": user_courses}
