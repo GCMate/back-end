@@ -1,4 +1,5 @@
 import sqlite3
+from threading import Lock
 from user import User
 from chat import Chat
 from course import Course
@@ -35,6 +36,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 # Connect to database and get control
 conn = sqlite3.connect('GCmate.db', check_same_thread=False)
 c = conn.cursor()
+lock= Lock()
 
 # Create user table if none in database
 try:
@@ -260,8 +262,9 @@ def add_user_in_course(rin, courseID):
         return "false"
     # if user-course is already linked in db --> return false (don't want duplicates)
     c.execute("SELECT * FROM ucoTable WHERE courseID=:courseID AND rin=:rin", {'courseID': courseID, 'rin': rin})
-    if c.fetchone() is not None:
-        return "true"
+    result = c.fetchone()
+    if result is not None:
+        return "false"
     else: 
         with conn:
             c.execute("INSERT INTO ucoTable VALUES (:courseID, :rin)", {'courseID': courseID, 'rin': rin})
@@ -269,16 +272,17 @@ def add_user_in_course(rin, courseID):
         return "true"
     
 # Returns all courses registered to a user     
-def get_users_courses(rin):
-    c.execute("SELECT * FROM ucoTable WHERE rin=:rin", {'rin': rin})
+def get_users_courses(userRin):
+    lock.acquire(True)
+    c.execute("SELECT * FROM ucoTable WHERE rin=:user_rin", {'user_rin': userRin})
     user_courses = c.fetchall()    
     course_list = []
     for course in user_courses: 
         c.execute("SELECT * FROM courses WHERE id=:id", {'id': course[0]})
         course_data = c.fetchone()
         course_list.append(course_data)  
+    lock.release()    
     return course_list
-    
 
 # load courses into database
 def load_courses(json_file):
@@ -313,6 +317,7 @@ def course_by_sub_to_json(subj):
     course_dict['COURSES'] = course_list 
     return course_list
 
+# ====== Run at Start ======
 load_courses('courses.json')
 
 usr1 = User("661889750", "8587400565")
@@ -320,50 +325,26 @@ usr1 = User("661889750", "8587400565")
 usr2 = User("661878609", "16465915259")
 if (taken_rin(661878609)): delete_user(usr2)
 # ============================
-print("== Test User Inserted ==")
+print("\n== Test User Inserted ==")
 insert_user(usr1)
-# insert_user(usr1)
-# insert_user(usr1)
-# insert_user(usr1)
 print("\n== Test: Get All Users ==")
 print(get_Users())
-print("\n== Test: Add a Course to Existing User ==")
-print(add_user_in_course("661889750", "ADMN-1030"))
+#print("\n== Test: Add a Course to Existing User ==")
 #print(add_user_in_course("661889750", "ADMN-1030"))
-#print(add_user_in_course("661889750", "ADMN-1030"))
-print("\n== Test: Add second Course to Existing User ==")
-print(add_user_in_course("661889750", "ADMN-1111"))
+#print("\n== Test: Add second Course to Existing User ==")
+#print(add_user_in_course("661889750", "ADMN-1111"))
 print("\n== Test: Get Existing User's Course ==")
 print(get_users_courses(usr1.rin))
-# get_Users()
-# insert_user(usr2)
-# get_Users()
-# insert_user(usr3)
-# get_Users()
-# delete_user(usr2)
-# get_Users()
 
-# usrbyrin = get_user_by_rin("661889750")
-
-
-# create_and_insert_course("math101")
-# print(get_Courses_by_subj('ADMN'))
-
-# print(course_by_sub_to_json('ADMN'))
-
-# print('-------')
-# print(type(usrbyrin))
-# print(get_Course_subj())
-# x = get_Courses()
-# print(type(x))
-# for i in x:
-    # print(i)
-# subjects_to_json()
-# f = open('courses.json')
-# test = json.load(f)
-# data = test[0]
-# print("{}, {}, {}, {}".format(data['courses'][0]['crse'], data['courses'][0]['id'], data['courses'][0]['subj'], data['courses'][0]['title']))
-# print(data.keys())
+# === Course Removal Test === 
+usrRC = User("661231234", "15555555555")
+#delete_user(usrRC)
+insert_user(usrRC)
+print("\n== New User Inserted ==")
+print(get_Users())
+print(get_users_courses(usrRC.rin))
+#print(add_user_in_course("661231234", "ADMN-1030"))
+# ===========================
 
 # Sending data from front -> back
 @app.route('/api/rin', methods=['POST'])
@@ -393,12 +374,17 @@ def get_cour_by_subject():
 
 # Update a user's course list with one course 
 @app.route('/api/ucupdate', methods=['POST'])
+@app.errorhandler(500)
 def update_user_course():
    data = request.get_json()  
-   add_user_in_course(data['RIN'],data['COURSEID'])
-   user_courses = get_users_courses(data['RIN'])
+   result = add_user_in_course(data['RIN'],data['COURSEID'])
+   # Duplicate course chosen 
+   if (result == "false"): 
+    return 500
+   else: 
+    user_courses = get_users_courses(data['RIN'])
 
-   return {"courses": user_courses}
+    return {"courses": user_courses}
 
 # Returns a user's registered courses 
 @app.route('/api/userCourses', methods=['POST'])
