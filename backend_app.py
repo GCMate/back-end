@@ -260,16 +260,18 @@ def add_user_in_course(rin, courseID):
     # if we don'† have the user --> return false
     if not taken_rin(rin):
         return "false"
+
     # if user-course is already linked in db --> return false (don't want duplicates)
     c.execute("SELECT * FROM ucoTable WHERE courseID=:courseID AND rin=:rin", {'courseID': courseID, 'rin': rin})
     result = c.fetchone()
-    if result is not None:
-        return "false"
-    else: 
+
+    if result is None:
         with conn:
             c.execute("INSERT INTO ucoTable VALUES (:courseID, :rin)", {'courseID': courseID, 'rin': rin})
             conn.commit()
-        return "true"
+        return "true"    
+    else: 
+        return "false" 
 
 # removes user-course row from ucoTable 
 def remove_user_from_course(rin, courseID):
@@ -371,23 +373,25 @@ print(get_Users())
 print("\n== Test: Get Existing User's Course ==")
 print(get_users_courses(usr1.rin))
 
-# === Course Removal Test === 
+print("\n=== Course Removal Test ===") 
 usrRC = User("661231234", "15555555555")
 #delete_user(usrRC)
-insert_user(usrRC)
-#insert_user(usr2)
-print("\n== New User Inserted ==")
-print(get_Users())
-print(get_users_courses(usrRC.rin))
-print("Users inserted")
-print(add_user_in_course(usr1.rin, "ADMN-4400"))
+#insert_user(usrRC)
+
+#print(get_Users())
+#print(get_users_courses(usrRC.rin))
+#print("User inserted")
+#c.execute("SELECT * FROM ucoTable WHERE courseID=:courseID AND rin=:rin", {'courseID': 'WRIT-2320', 'rin': '661231234'})
+#print(c.fetchone())
+if (taken_rin(661231234)): delete_user(usrRC)
+#add_user_in_course(usrRC.rin, "ADMN-4400")
 #print(add_user_in_course(usr2.rin, "ADMN-4400"))
-print("\n== Get users in course ==")
-print(get_course_users("ADMN-4400"))
-print("\n== Remove user: 661889750 ==")
-print(remove_user_from_course(usr1.rin, "ADMN-4400"))
+#print("\n== Get users in course ==")
+#print(get_course_users("ADMN-4400"))
+#print("\n== Remove user: 661889750 ==")
+#print(remove_user_from_course(usr1.rin, "ADMN-4400"))
 # print(get_Users())
-print(get_course_users("ADMN-4400"))
+#print(get_course_users("ADMN-4400"))
 # print(taken_rin(""))
 # ===========================
 
@@ -422,9 +426,9 @@ def get_cour_by_subject():
 @app.errorhandler(500)
 def update_user_course():
    data = request.get_json()  
-   result = add_user_in_course(data['RIN'],data['COURSEID'])
+   
    # Duplicate course chosen 
-   if (result == "false"): 
+   if (add_user_in_course(data['RIN'],data['COURSEID']) == "false"): 
     return 500
    else: 
     user_courses = get_users_courses(data['RIN'])
