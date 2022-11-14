@@ -45,7 +45,7 @@ class FeCommunicator:
             if (c.get_subj() == subject):
                 cbs.append(c.toJson())
         cbs_dict['COURSES'] = cbs
-        return cbs_dict
+        return cbs
 
     def get_user(self, rin):
         for usr in self.users:
@@ -103,7 +103,7 @@ class FeCommunicator:
         for c in usr_courses:
             for cour in self.courses:
                 if c == cour.get_id():
-                    course_list.append(cour.toJson())
+                    course_list.append(cour.toUsr())
                     break
         return course_list
 

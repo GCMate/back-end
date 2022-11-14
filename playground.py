@@ -39,7 +39,7 @@ print(my_fe.update_user_course("661889750", "ISCI-1600"))
 print("\n\ncourseID for courses taken by rin: {}".format("661889750"))
 print("---------")
 for i in my_fe.get_user_courses("661889750"):
-    print(i['id'])
+    print(i)
 
 # print(my_fe.remove_user("661889750"))
 # print("\nUsers:")

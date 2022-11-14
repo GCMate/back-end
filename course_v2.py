@@ -10,6 +10,9 @@ class Course:
     def toJson(self):
         return {'crse': self.crse, 'id': self.id, 'subj': self.subj, 'title': self.title}
 
+    def toUsr(self):
+        return (self.crse, self.id, self.subj, self.title)
+
     def get_crse(self):
         return self.crse
 
