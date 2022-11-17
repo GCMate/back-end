@@ -28,6 +28,6 @@ Follow these steps in order to run the backend:
        pip3 install -U flask-cors
        ```  
 5. Run `backend_app.py` by typing in the prompt below in your terminal/command prompt 
-   -   Windows: `python backend_app.py`
-   -   Mac: `python3 backend_app.py`    
+   -   Windows: `python backend_app_v2.py`
+   -   Mac: `python3 backend_app_v2.py`    
      
