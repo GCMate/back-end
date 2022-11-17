@@ -14,7 +14,7 @@ app = Flask(__name__)
 CORS(app, supports_credentials = True)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-my_fe = FeCommunicator("tester.db")
+my_fe = FeCommunicator("GCmate.db")
 my_fe.populate()
 
 

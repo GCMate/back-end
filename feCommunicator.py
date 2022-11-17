@@ -28,16 +28,18 @@ class FeCommunicator:
         return add_user
 
 
-
+    # check if rin is available
     def available_rin(self, rin):
         for usr in self.users:
             if (usr.get_rin() == rin):
                 return False
         return True
 
+    # get all subjects
     def get_subjects(self):
         return self.dbComm.get_subjects()
 
+    # get list of courses for a specific subject
     def get_courses_by_subject(self, subject):
         cbs = []
         cbs_dict = {}
@@ -47,24 +49,28 @@ class FeCommunicator:
         cbs_dict['COURSES'] = cbs
         return cbs
 
+    # return user object
     def get_user(self, rin):
         for usr in self.users:
             if usr.get_rin() == rin:
                 return usr
         return None
 
+    # set user object in list
     def set_user(self, usr):
         for i in range(len(self.users)):
             if self.users[i].rin == usr.get_rin():
                 self.users[i] = usr
                 break
 
+    # check whether we have a course or not
     def have_course(self, courseID):
         for c in self.courses:
             if c.get_id() == courseID:
                 return True
         return False
 
+    # update user's course list with a course
     def update_user_course(self, rin, courseID):
         usr = self.get_user(rin)
         if usr == None:
@@ -93,7 +99,7 @@ class FeCommunicator:
             return True
         return False
 
-
+    # get courses that a user is in
     def get_user_courses(self, rin):
         usr = self.get_user(rin)
         if usr == None:
@@ -107,6 +113,7 @@ class FeCommunicator:
                     break
         return course_list
 
+    # delete user
     def remove_user(self, rin):
         usr = self.get_user(rin)
         if usr == None:
@@ -120,7 +127,7 @@ class FeCommunicator:
         return True
         
         
-
+    # function that creates user and class objects from the db when app is booted up
     def populate(self):
         rl = self.dbComm.get_rins()
         ul = []
@@ -129,10 +136,11 @@ class FeCommunicator:
             ul.append(self.dbComm.get_user(i))
         self.users = ul
 
+    # get all user-course relations
     def get_all_uco(self):
         return self.dbComm.get_all_uco()
 
-    
+    # ignore this... should delete
     def test_cour(self, rin):
         usr = self.get_user(rin)
         if usr == None:

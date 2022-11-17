@@ -108,14 +108,11 @@ class DbCommunicator:
         conn = sqlite3.connect(self.database, check_same_thread=False)
         c = conn.cursor()
         c.execute("SELECT DISTINCT subj FROM courses")
-        # c.execute("SELECT * FROM courses")
         subjs = c.fetchall()
-        # print(subjs)
         conn.close()
         subject_dict = {}
         subject_list = []
         for i in subjs:
-            # print(i)
             subject_list.append(i[0])
         subject_dict['SUBJECTS'] = subject_list 
         return subject_dict
@@ -132,6 +129,7 @@ class DbCommunicator:
         else:
             return True
 
+    # get all rins
     def get_rins(self):
         conn = sqlite3.connect(self.database, check_same_thread=False)
         c = conn.cursor()
@@ -167,6 +165,7 @@ class DbCommunicator:
     #     #     conn.close()
     #     #     return "false" 
 
+    # return user object 
     def get_user(self, rin):
         if not self.taken_rin(rin):
             return None
@@ -186,6 +185,7 @@ class DbCommunicator:
             conn.close()
             return User(rin, phone, courses, chats)
 
+    # get list of course objects
     def get_courses(self):
         conn = sqlite3.connect(self.database, check_same_thread=False)
         c = conn.cursor()
@@ -198,7 +198,7 @@ class DbCommunicator:
         conn.close()
         return c_objs
 
-
+    # add course to user's list
     def update_user_course(self, rin, courseID):
         conn = sqlite3.connect(self.database, check_same_thread=False)
         c = conn.cursor()
@@ -207,6 +207,7 @@ class DbCommunicator:
             conn.commit()
         conn.close()
 
+    # remove user from course
     def remove_user_course(self, rin, courseID):
         conn = sqlite3.connect(self.database, check_same_thread=False)
         c = conn.cursor()
@@ -215,6 +216,7 @@ class DbCommunicator:
             conn.commit()
         conn.close()
     
+    # delete user
     def remove_user(self, rin):
         conn = sqlite3.connect(self.database, check_same_thread=False)
         c = conn.cursor()
@@ -225,6 +227,7 @@ class DbCommunicator:
             conn.commit()
         conn.close()
 
+    # get all user-course relations (for debugging purposes)
     def get_all_uco(self):
         conn = sqlite3.connect(self.database, check_same_thread=False)
         c = conn.cursor()
