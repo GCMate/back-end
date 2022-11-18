@@ -1,6 +1,6 @@
 # from dbCommunicator import DbCommunicator
-from user_v2 import User
-from course_v2 import Course
+from user import User
+from course import Course
 from chat import Chat
 from feCommunicator import FeCommunicator
 

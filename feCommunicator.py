@@ -1,6 +1,6 @@
 import json
-from user_v2 import User
-from course_v2 import Course
+from user import User
+from course import Course
 from dbCommunicator import DbCommunicator
 
 
