@@ -47,13 +47,13 @@ def get_cour_by_subject():
 
 # Update a user's course list with one course 
 @app.route('/api/ucupdate', methods=['POST'])
-# @app.errorhandler(500)
+@app.errorhandler(500)
 def update_user_course():
     data = request.get_json()  
     bool_val = my_fe.update_user_course(data['RIN'],data['COURSEID'])
     # Duplicate course chosen 
-    #if not bool_val: 
-    #     return 500
+    if not bool_val: 
+         return 500
      
     user_courses = my_fe.get_user_courses(data['RIN'])
     return {"courses": user_courses}

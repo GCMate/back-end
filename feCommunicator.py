@@ -116,7 +116,7 @@ class FeCommunicator:
         chat = self.get_chat(courseID)
         usr = self.get_user(rin)
         chat.removeMember(usr.get_rin())
-        
+        self.dbComm.remove_user_chat(rin, courseID)
         return True     
 
     # remove user from a course
