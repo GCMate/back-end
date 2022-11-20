@@ -4,7 +4,6 @@ from course import Course
 from chat import Chat
 from dbCommunicator import DbCommunicator
 
-
 class FeCommunicator:
     def __init__(self, database):
         self.database = database
@@ -96,7 +95,7 @@ class FeCommunicator:
             return True
         return False   
 
-     # add user to chat
+    # add user to chat
     def update_user_chat(self, rin, courseID):
         chat = self.get_chat(courseID)
         usr = self.get_user(rin)
@@ -111,6 +110,14 @@ class FeCommunicator:
             self.dbComm.update_user_chat(rin, courseID)
             return True
         return False   
+
+    # Remove user from a chat 
+    def remove_user_chat(self, rin, courseID): 
+        chat = self.get_chat(courseID)
+        usr = self.get_user(rin)
+        chat.removeMember(usr.get_rin())
+        
+        return True     
 
     # remove user from a course
     def remove_user_course(self, rin, courseID):
@@ -136,7 +143,7 @@ class FeCommunicator:
     def get_user_courses(self, rin):
         usr = self.get_user(rin)
         if usr == None:
-            return False
+            return []
         usr_courses = usr.get_courses()
         course_list = []
         for c in usr_courses:

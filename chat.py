@@ -6,8 +6,6 @@ class Chat:
         self.name = name
         self.members = []
 
-
-    
     def getCourseID(self):
         return self.courseID
 

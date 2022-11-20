@@ -4,7 +4,6 @@ from user import User
 from course import Course
 from chat import Chat
 
-
 class DbCommunicator:
     def __init__(self, database, json_file):
         self.database = database
