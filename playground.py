@@ -6,7 +6,7 @@ from feCommunicator import FeCommunicator
 
 # my_comm = DbCommunicator("tester.db", 'courses.json')
 
-my_fe = FeCommunicator("tester.db")
+my_fe = FeCommunicator("GCMate.db")
 my_fe.populate()
 
 # Add new user 
@@ -36,6 +36,25 @@ print(my_fe.update_user_course("661889750", "ISCI-6510"))
 print(my_fe.update_user_course("661889750", "ISCI-1600"))
 # print(my_fe.remove_user("661889750"))
 
+
+print("\nAdding chats:")
+print(my_fe.update_user_chat("661889750", "ADMN-4400"))
+print(my_fe.update_user_chat("661889750", "ISCI-6510"))
+print(my_fe.update_user_chat("661889750", "ISCI-1600"))
+print(my_fe.update_user_chat("661889750", "ISCI-1600"))
+print(my_fe.update_user_chat("661889751", "ISCI-1600"))
+
+# for c in my_fe.chats:
+    # if c.getCourseID() == "ISCI-1600":
+    # print(c.getMembers())
+
+print("\nChat Members")
+print("------------")
+print(my_fe.get_chat_members('ISCI-4510'))
+print("\n")
+
+print(my_fe.get_all_uch())
+
 print("\n\ncourseID for courses taken by rin: {}".format("661889750"))
 print("---------")
 for i in my_fe.get_user_courses("661889750"):
@@ -52,8 +71,8 @@ print(my_fe.remove_user_course("661889750", 'ISCI-6510'))
 print(my_fe.test_cour("661889750"))
 print(my_fe.get_all_uco())
 
-print(my_fe.remove_user("661889750"))
-print(my_fe.get_all_uco())
+# print(my_fe.remove_user("661889750"))
+# print(my_fe.get_all_uco())
 
 # test_usr = User("661889750", "8587400565", [], [])
 # print(test_usr.add_course("blah"))

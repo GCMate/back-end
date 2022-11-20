@@ -48,17 +48,29 @@ def get_cour_by_subject():
 
 # Update a user's course list with one course 
 @app.route('/api/ucupdate', methods=['POST'])
-@app.errorhandler(500)
+# @app.errorhandler(500)
 def update_user_course():
     data = request.get_json()  
     bool_val = my_fe.update_user_course(data['RIN'],data['COURSEID'])
-    # Duplicate course chosen 
-    if not bool_val: 
-        return 500
-    else: 
-        user_courses = my_fe.get_user_courses(data['RIN'])
+    # # Duplicate course chosen 
+    # if not bool_val: 
+    #     return 500
+    # else: 
+    user_courses = my_fe.get_user_courses(data['RIN'])
+    return {"courses": user_courses}
 
-        return {"courses": user_courses}
+
+@app.route('/api/addUserChat', methods=['POST'])
+# @app.errorhandler(500)
+def update_user_chat():
+    data = request.get_json()  
+    bool_val = my_fe.update_user_chat(data['RIN'],data['COURSEID'])
+    # # Duplicate course chosen 
+    # if not bool_val: 
+    #     return 500
+    # else: 
+    chatMembers = my_fe.get_chat_members(data['COURSEID'])
+    return {"users": chatMembers}
 
 # remove user from course
 @app.route('/api/ucremove', methods=['POST'])

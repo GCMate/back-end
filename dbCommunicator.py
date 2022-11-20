@@ -2,6 +2,7 @@ import sqlite3
 import json
 from user import User
 from course import Course
+from chat import Chat
 
 
 class DbCommunicator:
@@ -52,7 +53,6 @@ class DbCommunicator:
         # Create user-chat table if none in database
         try:
             c.execute("""CREATE TABLE uchTable (
-                        chatID text,
                         courseID text,  
                         rin text
                         )""")
@@ -185,6 +185,26 @@ class DbCommunicator:
             conn.close()
             return User(rin, phone, courses, chats)
 
+
+    def get_chat(self, courseID):
+        if not self.course_in_db(courseID):
+            return None
+        
+        conn = sqlite3.connect(self.database, check_same_thread=False)
+        c = conn.cursor()
+        c.execute("SELECT title FROM courses WHERE id=:id", {'id': courseID})
+        name = c.fetchone()
+        c.execute("SELECT rin FROM uchTable WHERE courseID=:courseID", {'courseID': courseID})
+        rins = c.fetchall()
+        conn.close()
+        my_chat = Chat(courseID, name)
+        if rins is not None:
+            for r in rins:
+                my_chat.addMember(r[0])
+        return my_chat
+        
+
+
     # get list of course objects
     def get_courses(self):
         conn = sqlite3.connect(self.database, check_same_thread=False)
@@ -203,9 +223,24 @@ class DbCommunicator:
         conn = sqlite3.connect(self.database, check_same_thread=False)
         c = conn.cursor()
         with conn:
+            # c.execute("SELECT * FROM ucoTable WHERE courseID=:courseID AND rin=:rin", {'courseID': courseID, 'rin': rin})
+            # classes = c.fetchall()
+            # if classes is None:
             c.execute("INSERT INTO ucoTable VALUES (:courseID, :rin)", {'courseID': courseID, 'rin': rin})
             conn.commit()
         conn.close()
+
+    def update_user_chat(self, rin, courseID):
+        conn = sqlite3.connect(self.database, check_same_thread=False)
+        c = conn.cursor()
+        with conn:
+            # c.execute("SELECT * FROM uchTable WHERE courseID=:courseID AND rin=:rin", {'courseID': courseID, 'rin': rin})
+            # chats = c.fetchall()
+            # if chats == None:
+            c.execute("INSERT INTO uchTable VALUES (:courseID, :rin)", {'courseID': courseID, 'rin': rin})
+            conn.commit()
+        conn.close()
+
 
     # remove user from course
     def remove_user_course(self, rin, courseID):
@@ -213,6 +248,14 @@ class DbCommunicator:
         c = conn.cursor()
         with conn:
             c.execute("DELETE FROM ucoTable WHERE courseID=:courseID AND rin=:rin", {'courseID': courseID, 'rin': rin})
+            conn.commit()
+        conn.close()
+
+    def remove_user_chat(self, rin, courseID):
+        conn = sqlite3.connect(self.database, check_same_thread=False)
+        c = conn.cursor()
+        with conn:
+            c.execute("DELETE FROM uchTable WHERE courseID=:courseID AND rin=:rin", {'courseID': courseID, 'rin': rin})
             conn.commit()
         conn.close()
     
@@ -233,11 +276,20 @@ class DbCommunicator:
         c = conn.cursor()
         c.execute("SELECT * FROM ucoTable")
         ret_lst = [] 
-        for val in c.fetchall():
+        for val in list(c.fetchall()):
             ret_lst.append(val)
         conn.close()
         return ret_lst
 
+    def get_all_uch(self):
+        conn = sqlite3.connect(self.database, check_same_thread=False)
+        c = conn.cursor()
+        c.execute("SELECT * FROM uchTable")
+        ret_lst = [] 
+        for val in list(c.fetchall()):
+            ret_lst.append(val)
+        conn.close()
+        return ret_lst
             
             
 
