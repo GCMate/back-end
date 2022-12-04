@@ -9,6 +9,11 @@ import json
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS, cross_origin
 
+
+# Facade design pattern:
+# All communication from the front-end passes through the feCommunicator 
+# which then gets passed to the appropriate object
+
 app = Flask(__name__)
 CORS(app, supports_credentials = True)
 app.config['CORS_HEADERS'] = 'Content-Type'
