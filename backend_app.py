@@ -6,7 +6,9 @@ from feCommunicator import FeCommunicator
 
 # Facade design pattern:
 # All communication from the front-end passes through the feCommunicator
-# which then gets passed to the appropriate object
+# which then gets passed to the appropriate object,
+# this was done in order to simplify API calls and 
+# make the code as simple as possible at the connection point between the front and back ends
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
